@@ -6,7 +6,7 @@ def cross(A, B):
 digits = '123456789'
 rows = 'ABCDEFGHI'
 cols = digits
-squares = cross(rows, cols)
+squares = cross(rows, cols)  # "A1", "A2"... "I9"
 unitlist = ([cross(rows, c) for c in cols] +
             [cross(r, cols) for r in rows] +
             [cross(rs, cs) for rs in ('ABC', 'DEF', 'GHI') for cs in ('123', '456', '789')])
@@ -34,18 +34,25 @@ def parse_grid(grid):
     """Convert grid to a dict of possible values, {square: digits}, or
     return False if a contradiction is detected."""
     ## To start, every square can be any digit; then assign values from the grid.
-    values = dict((s, digits) for s in squares)
-    for s, d in grid_values(grid).items():
-        if d in digits and not assign(values, s, d):
+    values_that_are_not_eliminated = dict((s, digits) for s in squares) # dict das zu jedem Feld alle digits erzeugt
+    for s, d in generate_initial_user_grid(grid).items():
+        if d in digits and not assign(values_that_are_not_eliminated, s, d):
             return False  ## (Fail if we can't assign d to square s.)
-    return values
+    return values_that_are_not_eliminated
 
 
-def grid_values(grid):
-    "Convert grid into a dict of {square: char} with '0' or '.' for empties."
+def generate_initial_user_grid(grid: str) -> dict[str, str]:
+    "Convert grid (= Spielfeld) into a dict of {square: char} with '0' or '.' for empties."
+    chars = parse_input(grid)
+    # dict["A2"] = "1" --> Nutzer will an Feld A2 eine 1 stehen haben
+    return dict(zip(squares, chars))
+
+
+def parse_input(grid):
+    """Sanity check des Spielfeldes."""
     chars = [c for c in grid if c in digits or c in '0.']
     assert len(chars) == 81
-    return dict(zip(squares, chars))
+    return chars
 
 
 def assign(values, s, d):
